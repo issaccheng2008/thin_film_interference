@@ -44,7 +44,9 @@ void MainWindow::initializePlot()
     ui->customplot->yAxis->setRange(0.0, 1.0);
     ui->customplot->xAxis->setRange(0.0, 1.0);
 
-    connect(ui->customplot->xAxis, &QCPAxis::rangeChanged, this, [this](const QCPRange &range) {
+    connect(ui->customplot->xAxis,
+            QOverload<const QCPRange &>::of(&QCPAxis::rangeChanged), this,
+            [this](const QCPRange &range) {
         if (mLockingRange)
             return;
         mLockingRange = true;
