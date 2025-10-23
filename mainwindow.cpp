@@ -93,7 +93,7 @@ double MainWindow::sliderToValue(const QSlider *slider, double scale, double off
 
 void MainWindow::updateVisualization()
 {
-    mE = sliderToValue(ui->sliderE, 1.0);
+    mE = sliderToValue(ui->sliderE, 0.1);
     mN1 = sliderToValue(ui->sliderN1, 100.0);
     mN2 = sliderToValue(ui->sliderN2, 100.0);
     mN3 = sliderToValue(ui->sliderN3, 100.0);
@@ -110,15 +110,40 @@ void MainWindow::updateVisualization()
     updateRingImage();
     updatePlot();
 }
+double ref(double n1, double n2, double theta_i)
+{
+    if (n1 > n2 && sin(theta_i) > n2 / n1)
+        return 1.0;
+
+    // Snell’s law
+    double sin_t = n1 * sin(theta_i) / n2;
+    double theta_t = asin(sin_t);
+
+    double cos_i = cos(theta_i);
+    double cos_t = cos(theta_t);
+
+    // Fresnel reflection coefficients
+    double Rs = pow((n1 * cos_i - n2 * cos_t) / (n1 * cos_i + n2 * cos_t), 2);
+    double Rp = pow((n2 * cos_i - n1 * cos_t) / (n2 * cos_i + n1 * cos_t), 2);
+
+    // Return average for unpolarized light
+    return 0.5 * (Rs + Rp);
+}
 
 double MainWindow::computeBrightness(double r) const
 {
     if (mF <= 0.0)
         return 0.0;
-    const double argument = mE + mN1 + mN2 + mN3 + mLambda + (r / mF);
-    const double value = qCos(argument);
-    const double brightness = value * value;
-    return qBound(0.0, brightness, 1.0);
+    double i=atan(r/mF);
+    if(sin(i)>mN2/mN1)return 1;
+    double j=asin(sin(i)*mN1/mN2);
+    double dif=2*mE*mN2*cos(j)/mN1;
+    double d=dif*2*3.1415926/mLambda;
+    if(((mN1<mN2)+(mN2<mN3))==1)d+=3.1415926;
+    double I1=ref(mN1,mN2,i);
+    double I2=(1-I1)*ref(mN2,mN3,j)*(1-ref(mN2,mN1,j));
+    double bright=sqrt(I1+I2+2*sqrt(I1*I2)*cos(d));
+    return qBound(0.0, bright, 1.0);
 }
 
 void MainWindow::updateRingImage()
@@ -165,7 +190,7 @@ void MainWindow::updatePlot()
         return;
 
     const double rMax = qMax(0.1, ui->customplot->xAxis->range().upper);
-    const double dr = 0.01;
+    const double dr = 0.001;
     const int pointCount = static_cast<int>(rMax / dr) + 1;
 
     QVector<double> x(pointCount);

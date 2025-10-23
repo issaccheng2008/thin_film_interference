@@ -37,11 +37,11 @@ private:
     QImage mRingImage;
     bool mLockingXAxisRange = false;
     bool mLockingYAxisRange = false;
-    double mE = 500.0;
+    double mE = 744.0;
     double mN1 = 3.0;
     double mN2 = 5.0;
-    double mN3 = 7.0;
-    double mLambda = 550.0;
+    double mN3 = 10.0;
+    double mLambda = 163.0;
     double mF = 1.0;
 };
 
