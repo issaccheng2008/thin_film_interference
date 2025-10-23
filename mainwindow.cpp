@@ -38,6 +38,8 @@ void MainWindow::initializePlot()
     ui->customplot->graph()->setLineStyle(QCPGraph::lsLine);
     ui->customplot->graph()->setPen(QPen(QColor(0, 120, 215), 2));
     ui->customplot->setInteractions(QCP::iRangeDrag | QCP::iRangeZoom | QCP::iSelectPlottables);
+    ui->customplot->axisRect()->setRangeDrag(Qt::Horizontal);
+    ui->customplot->axisRect()->setRangeZoom(Qt::Horizontal);
 
     ui->customplot->xAxis->setLabel(QStringLiteral("r (m)"));
     ui->customplot->yAxis->setLabel(QStringLiteral("brightness"));
@@ -47,16 +49,26 @@ void MainWindow::initializePlot()
     connect(ui->customplot->xAxis,
             QOverload<const QCPRange &>::of(&QCPAxis::rangeChanged), this,
             [this](const QCPRange &range) {
-        if (mLockingRange)
+        if (mLockingXAxisRange)
             return;
-        mLockingRange = true;
+        mLockingXAxisRange = true;
         double upper = range.upper;
         if (upper <= 0.0) {
             upper = 0.1;
         }
         ui->customplot->xAxis->setRange(0.0, upper);
-        mLockingRange = false;
+        mLockingXAxisRange = false;
         updateVisualization();
+    });
+
+    connect(ui->customplot->yAxis,
+            QOverload<const QCPRange &>::of(&QCPAxis::rangeChanged), this,
+            [this](const QCPRange &) {
+        if (mLockingYAxisRange)
+            return;
+        mLockingYAxisRange = true;
+        ui->customplot->yAxis->setRange(0.0, 1.0);
+        mLockingYAxisRange = false;
     });
 }
 

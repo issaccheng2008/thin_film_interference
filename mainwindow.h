@@ -35,7 +35,8 @@ private:
 
     Ui::MainWindow *ui;
     QImage mRingImage;
-    bool mLockingRange = false;
+    bool mLockingXAxisRange = false;
+    bool mLockingYAxisRange = false;
     double mE = 500.0;
     double mN1 = 3.0;
     double mN2 = 5.0;
